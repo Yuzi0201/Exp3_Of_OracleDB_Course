@@ -1,9 +1,8 @@
-package com.Yuzi.SqlFinalWork;
+package com.Yuzi.Exp3_Of_OracleDB_Course;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.Objects;
 
 class ConnectDB{
@@ -90,7 +89,7 @@ class LoginWindow extends JFrame{
 
 class AdminWindow extends JFrame{
     public AdminWindow(){
-        
+
     }
 }
 
