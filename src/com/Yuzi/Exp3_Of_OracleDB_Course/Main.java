@@ -1,28 +1,42 @@
 package com.Yuzi.Exp3_Of_OracleDB_Course;
+
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
 import java.util.Objects;
 
-class ConnectDB{
+class ConnectDB {
+    private Connection connection = null;
+    private Statement statement = null;
+    public ResultSet resultset = null;
     public Connection connect() throws SQLException, ClassNotFoundException {
-        Connection connection = null;
         Class.forName("oracle.jdbc.OracleDriver");
         connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "final_work", "114514");
-        if (connection != null)
-            System.out.println("Connected with connection final_work");
         return connection;
+    }
+    public void DoSql(String sql){
+        ConnectDB connectDB = new ConnectDB();
+        try {
+            connection = connectDB.connect();
+            statement = connection.createStatement();
+            System.out.println(sql);//for debug
+            resultset = statement.executeQuery(sql);
+        } catch (SQLException | ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
     }
 }
 
-class LoginWindow extends JFrame{
+class LoginWindow extends JFrame {
     JTextField number;
     JButton button;
     JPasswordField password;
 
     public LoginWindow() {
         init();
+        setResizable(false);
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -44,74 +58,170 @@ class LoginWindow extends JFrame{
         button = new JButton("确定");
         button.setBounds(115, 150, 70, 30);
         add(button);
-        ButtonAction button_action=new ButtonAction();
+        ButtonAction button_action = new ButtonAction();
         button.addActionListener(button_action);
     }
-    private class ButtonAction implements ActionListener{
+
+    private class ButtonAction implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (Objects.equals(number.getText(), "admin")){
-                if (Objects.equals(password.getText(), "1919810")){
+            if (Objects.equals(number.getText(), "admin")) {
+                if (Objects.equals(password.getText(), "1919810")) {
                     setVisible(false);
-                    AdminWindow adminwindow=new AdminWindow();
-                }
-                else {
+                    AdminWindow adminwindow = new AdminWindow();
+                } else {
                     JFrame errordialog = new JFrame();
-                    JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！");
+                    JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！","错误",JOptionPane.ERROR_MESSAGE);
                 }
-            }
-            else {
-                Connection connection = null;
-                Statement statement = null;
-                ResultSet resultset = null;
-                ConnectDB connectDB = new ConnectDB();
-                try {
-                    connection = connectDB.connect();
-                    statement = connection.createStatement();
+            } else {
                     String sql = "select * from student where SNO=" + number.getText() + " and PWD=" + password.getText();
+                    ConnectDB connectDB=new ConnectDB();
+                    connectDB.DoSql(sql);
                     System.out.println(sql);
-                    resultset = statement.executeQuery(sql);
-                } catch (SQLException | ClassNotFoundException ex) {
+                try {
+                    if (!connectDB.resultset.next()) {
+                        JFrame errordialog = new JFrame();
+                        JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！","错误",JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        setVisible(false);
+                        StudentWindow studentWindow = new StudentWindow(number.getText());
+                    }
+                } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
-                if (resultset == null) {
-                    JFrame errordialog = new JFrame();
-                    JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！");
-                } else {
-                    setVisible(false);
-                    StudentWindow studentWindow=new StudentWindow();
-                }
+            }
             }
         }
     }
-}
 
-class AdminWindow extends JFrame{
-    public AdminWindow(){
+
+class AdminWindow extends JFrame {
+    public AdminWindow() {
         init();
         setBounds(50, 20, 900, 600);
         setTitle("管理员界面");
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
+
     void init() {
         setLayout(null);
 
     }
 }
 
-class StudentWindow extends JFrame{
-    StudentWindow(){
+class StudentWindow extends JFrame {
+    private String SNO;
+
+    StudentWindow(String SNO) throws SQLException {
+        this.SNO = SNO;
         init();
         setBounds(50, 20, 900, 600);
         setTitle("学生界面");
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
-    void init(){
-        setLayout(null);
 
+    void init() throws SQLException {
+        setLayout(new BorderLayout());
+        JLabel label1 = new JLabel("<html><body><br/><br/>欢迎使用学生课程系统！</body></html>", JLabel.CENTER);
+        label1.setFont(new Font("华文新魏", 1, 25));
+        add(label1, BorderLayout.NORTH);
+        ConnectDB connectDB_1=new ConnectDB();
+        connectDB_1.DoSql("select * from student where SNO="+SNO);
+        connectDB_1.resultset.next();
+        JLabel label2=new JLabel("当前登录用户："+connectDB_1.resultset.getString("SNAME"));
+        label2.setFont(new Font("仿宋", 0, 15));
+        add(label2,BorderLayout.SOUTH);
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+        JMenu jMenu_Person = new JMenu("个人");
+        jMenu_Person.setPreferredSize(new Dimension(45, 30));
+        menuBar.add(jMenu_Person);
+        JMenu jMenu_Courses = new JMenu("课程");
+        jMenu_Courses.setPreferredSize(new Dimension(45, 30));
+        menuBar.add(jMenu_Courses);
+        JMenu jMenu_Statistics = new JMenu("统计");
+        jMenu_Statistics.setPreferredSize(new Dimension(45, 30));
+        menuBar.add(jMenu_Statistics);
+        JMenuItem jMenuItem_Person_changepwd = new JMenuItem("更改密码");
+        jMenuItem_Person_changepwd.setPreferredSize(new Dimension(120, 30));
+        jMenu_Person.add(jMenuItem_Person_changepwd);
+        JMenuItem jMenuItem_Person_changeperson = new JMenuItem("更改个人信息");
+        jMenuItem_Person_changeperson.setPreferredSize(new Dimension(120, 30));
+        jMenu_Person.add(jMenuItem_Person_changeperson);
+        JMenuItem jMenuItem_Courses_add = new JMenuItem("添加课程");
+        jMenuItem_Courses_add.setPreferredSize(new Dimension(120, 30));
+        jMenu_Courses.add(jMenuItem_Courses_add);
+        JMenuItem jMenuItem_Courses_delete = new JMenuItem("退选课程");
+        jMenuItem_Courses_delete.setPreferredSize(new Dimension(120, 30));
+        jMenu_Courses.add(jMenuItem_Courses_delete);
+        JMenuItem jMenuItem_Statistics_grade = new JMenuItem("查询成绩");
+        jMenuItem_Statistics_grade.setPreferredSize(new Dimension(120, 30));
+        jMenu_Statistics.add(jMenuItem_Statistics_grade);
+        JMenuItem jMenuItem_Statistics_credit = new JMenuItem("查询已获得学分");
+        jMenuItem_Statistics_credit.setPreferredSize(new Dimension(120, 30));
+        jMenu_Statistics.add(jMenuItem_Statistics_credit);
+        jMenuItem_Person_changepwd.addActionListener(e -> {
+            JPasswordField password;
+            JButton button;
+            JPasswordField password_repeat;
+            JFrame changePwd=new JFrame("修改密码");
+            changePwd.setBounds(500, 200, 310, 260);
+            changePwd.setResizable(false);
+            changePwd.setLayout(null);
+            JLabel jl1 = new JLabel("新密码：");
+            jl1.setBounds(30, 50, 100, 30);
+            changePwd.add(jl1);
+            password = new JPasswordField(10);
+            password.setBounds(80, 50, 150, 30);
+            changePwd.add(password);
+            password_repeat = new JPasswordField(10);
+            JLabel jl2 = new JLabel("重复密码：");
+            jl2.setBounds(20, 100, 100, 30);
+            changePwd.add(jl2);
+            password_repeat.setBounds(80, 100, 150, 30);
+            changePwd.add(password_repeat);
+            button = new JButton("确定");
+            button.setBounds(115, 150, 70, 30);
+            changePwd.add(button);
+            button.addActionListener(e1 -> {
+                if(Objects.equals(password.getText(), password_repeat.getText())){
+                    if(password.getPassword()!=null) {
+                        ConnectDB connectDB = new ConnectDB();
+                        connectDB.DoSql("update student set PWD=" + password.getText() + " where SNO=" + SNO);
+                        connectDB.DoSql("select * from student where SNO=" + SNO);
+                        try {
+                            connectDB.resultset.next();
+                            if (!Objects.equals(connectDB.resultset.getString("PWD"), password.getText())) {
+                                JFrame errordialog = new JFrame();
+                                JOptionPane.showMessageDialog(null, "修改失败！","错误",JOptionPane.ERROR_MESSAGE);
+                            } else {
+                                JFrame errordialog = new JFrame();
+                                JOptionPane.showMessageDialog(null, "修改成功！");
+                            }
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    else {
+                        JFrame errordialog = new JFrame();
+                        JOptionPane.showMessageDialog(errordialog, "密码不能为空！","错误",JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+                else {
+                    JFrame errordialog = new JFrame();
+                    JOptionPane.showMessageDialog(errordialog, "两次输入的密码不一致！","错误",JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            changePwd.setVisible(true);
+        });
+        jMenuItem_Person_changeperson.addActionListener(e -> {
+            JFrame change_Person =new JFrame("修改个人信息");
+
+            change_Person.setVisible(true);
+        });
     }
 }
 
@@ -123,14 +233,13 @@ public class Main {
         win.setTitle("登录");
         Connection conn1 = null;
         Statement statement = null;
-        ResultSet resultset=null;
+        ResultSet resultset = null;
         ConnectDB connectDB = new ConnectDB();
-        conn1=connectDB.connect();
+        conn1 = connectDB.connect();
         statement = conn1.createStatement();
-        resultset=statement.executeQuery("select * from student");
-        while (resultset.next())
-        {
-            System.out.println(resultset.getString("SNO")+"   "+resultset.getString("SNAME")+"   "+resultset.getString("PWD"));  //打印输出结果集
+        resultset = statement.executeQuery("select * from student");
+        while (resultset.next()) {
+            System.out.println(resultset.getString("SNO") + "   " + resultset.getString("SNAME") + "   " + resultset.getString("PWD"));  //打印输出结果集
         }
     }
 }
