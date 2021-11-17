@@ -53,7 +53,8 @@ class LoginWindow extends JFrame{
         public void actionPerformed(ActionEvent e) {
             if (Objects.equals(number.getText(), "admin")){
                 if (Objects.equals(password.getText(), "1919810")){
-
+                    setVisible(false);
+                    AdminWindow adminwindow=new AdminWindow();
                 }
                 else {
                     JFrame errordialog = new JFrame();
@@ -71,16 +72,15 @@ class LoginWindow extends JFrame{
                     String sql = "select * from student where SNO=" + number.getText() + " and PWD=" + password.getText();
                     System.out.println(sql);
                     resultset = statement.executeQuery(sql);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                } catch (ClassNotFoundException ex) {
+                } catch (SQLException | ClassNotFoundException ex) {
                     ex.printStackTrace();
                 }
                 if (resultset == null) {
                     JFrame errordialog = new JFrame();
                     JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！");
                 } else {
-
+                    setVisible(false);
+                    StudentWindow studentWindow=new StudentWindow();
                 }
             }
         }
@@ -89,6 +89,28 @@ class LoginWindow extends JFrame{
 
 class AdminWindow extends JFrame{
     public AdminWindow(){
+        init();
+        setBounds(50, 20, 900, 600);
+        setTitle("管理员界面");
+        setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+    void init() {
+        setLayout(null);
+
+    }
+}
+
+class StudentWindow extends JFrame{
+    StudentWindow(){
+        init();
+        setBounds(50, 20, 900, 600);
+        setTitle("学生界面");
+        setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+    void init(){
+        setLayout(null);
 
     }
 }
