@@ -11,15 +11,16 @@ class ConnectDB {
     private Connection connection = null;
     private Statement statement = null;
     public ResultSet resultset = null;
+
     public Connection connect() throws SQLException, ClassNotFoundException {
         Class.forName("oracle.jdbc.OracleDriver");
         connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE", "final_work", "114514");
         return connection;
     }
-    public void DoSql(String sql){
-        ConnectDB connectDB = new ConnectDB();
+
+    public void DoSql(String sql) {
         try {
-            connection = connectDB.connect();
+            connection = connect();
             statement = connection.createStatement();
             System.out.println(sql);//for debug
             resultset = statement.executeQuery(sql);
@@ -72,17 +73,17 @@ class LoginWindow extends JFrame {
                     AdminWindow adminwindow = new AdminWindow();
                 } else {
                     JFrame errordialog = new JFrame();
-                    JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！","错误",JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！", "错误", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                    String sql = "select * from student where SNO=" + number.getText() + " and PWD=" + password.getText();
-                    ConnectDB connectDB=new ConnectDB();
-                    connectDB.DoSql(sql);
-                    System.out.println(sql);
+                String sql = "select * from student where SNO=" + number.getText() + " and PWD=" + password.getText();
+                ConnectDB connectDB = new ConnectDB();
+                connectDB.DoSql(sql);
+                System.out.println(sql);
                 try {
                     if (!connectDB.resultset.next()) {
                         JFrame errordialog = new JFrame();
-                        JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！","错误",JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！", "错误", JOptionPane.ERROR_MESSAGE);
                     } else {
                         setVisible(false);
                         StudentWindow studentWindow = new StudentWindow(number.getText());
@@ -91,9 +92,9 @@ class LoginWindow extends JFrame {
                     ex.printStackTrace();
                 }
             }
-            }
         }
     }
+}
 
 
 class AdminWindow extends JFrame {
@@ -116,15 +117,16 @@ class StudentWindow extends JFrame {
     private String SNAME;
     private String SSEX;
     private String SAGE;
+    private JLabel jLabel_LoginUserName;
 
     StudentWindow(String SNO) throws SQLException {
         this.SNO = SNO;
-        ConnectDB connectDB=new ConnectDB();
-        connectDB.DoSql("select * from student where SNO="+SNO);
+        ConnectDB connectDB = new ConnectDB();
+        connectDB.DoSql("select * from student where SNO=" + SNO);
         connectDB.resultset.next();
-        SNAME=connectDB.resultset.getString("SNAME");
-        SSEX=connectDB.resultset.getString("SSEX");
-        SAGE=connectDB.resultset.getString("SAGE");
+        SNAME = connectDB.resultset.getString("SNAME");
+        SSEX = connectDB.resultset.getString("SSEX");
+        SAGE = connectDB.resultset.getString("SAGE");
         init();
         setBounds(50, 20, 900, 600);
         setTitle("学生界面");
@@ -137,9 +139,9 @@ class StudentWindow extends JFrame {
         JLabel label1 = new JLabel("<html><body><br/><br/>欢迎使用学生课程系统！</body></html>", JLabel.CENTER);
         label1.setFont(new Font("华文新魏", 1, 25));
         add(label1, BorderLayout.NORTH);
-        JLabel label2=new JLabel("当前登录用户："+SNAME);
-        label2.setFont(new Font("仿宋", 0, 15));
-        add(label2,BorderLayout.SOUTH);
+        jLabel_LoginUserName = new JLabel("当前登录用户：" + SNAME);
+        jLabel_LoginUserName.setFont(new Font("仿宋", 0, 15));
+        add(jLabel_LoginUserName, BorderLayout.SOUTH);
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
         JMenu jMenu_Person = new JMenu("个人");
@@ -173,7 +175,7 @@ class StudentWindow extends JFrame {
             JPasswordField password;
             JButton button;
             JPasswordField password_repeat;
-            JFrame changePwd=new JFrame("修改密码");
+            JFrame changePwd = new JFrame("修改密码");
             changePwd.setBounds(500, 200, 310, 260);
             changePwd.setResizable(false);
             changePwd.setLayout(null);
@@ -193,63 +195,83 @@ class StudentWindow extends JFrame {
             button.setBounds(115, 150, 70, 30);
             changePwd.add(button);
             button.addActionListener(e1 -> {
-                if(Objects.equals(password.getText(), password_repeat.getText())){
-                    if(password.getPassword()!=null) {
+                if (Objects.equals(password.getText(), password_repeat.getText())) {
+                    if (password.getPassword() != null) {
                         ConnectDB connectDB = new ConnectDB();
                         connectDB.DoSql("update student set PWD=" + password.getText() + " where SNO=" + SNO);
                         connectDB.DoSql("select * from student where SNO=" + SNO);
                         try {
                             connectDB.resultset.next();
                             if (!Objects.equals(connectDB.resultset.getString("PWD"), password.getText())) {
-                                JOptionPane.showMessageDialog(null, "修改失败！","错误",JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "修改失败！", "错误", JOptionPane.ERROR_MESSAGE);
                             } else {
                                 JOptionPane.showMessageDialog(null, "修改成功！");
                             }
                         } catch (SQLException ex) {
                             ex.printStackTrace();
                         }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "密码不能为空！", "错误", JOptionPane.ERROR_MESSAGE);
                     }
-                    else {
-                        JOptionPane.showMessageDialog(null, "密码不能为空！","错误",JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-                else {
-                    JFrame errordialog = new JFrame();
-                    JOptionPane.showMessageDialog(errordialog, "两次输入的密码不一致！","错误",JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, "两次输入的密码不一致！", "错误", JOptionPane.ERROR_MESSAGE);
                 }
             });
             changePwd.setVisible(true);
         });
         jMenuItem_Person_changeperson.addActionListener(e -> {
-            JFrame change_Person =new JFrame("修改个人信息");
+            JFrame change_Person = new JFrame("修改个人信息");
             change_Person.setBounds(500, 200, 310, 360);
             change_Person.setResizable(false);
             change_Person.setLayout(null);
-            JLabel change_Person_sno=new JLabel("学号：    "+SNO);
+            JLabel change_Person_sno = new JLabel("学号：    " + SNO);
             change_Person_sno.setBounds(30, 50, 100, 30);
             change_Person.add(change_Person_sno);
-            JLabel jLabel_change_name=new JLabel("姓名：");
+            JLabel jLabel_change_name = new JLabel("姓名：");
             jLabel_change_name.setBounds(30, 100, 100, 30);
             change_Person.add(jLabel_change_name);
-            JTextField jTextField_Sname=new JTextField(SNAME);
+            JTextField jTextField_Sname = new JTextField(SNAME);
             jTextField_Sname.setBounds(80, 100, 150, 30);
             change_Person.add(jTextField_Sname);
-            JLabel jLabel_change_sex=new JLabel("性别：");
+            JLabel jLabel_change_sex = new JLabel("性别：");
             jLabel_change_sex.setBounds(30, 150, 100, 30);
             change_Person.add(jLabel_change_sex);
-            JTextField jTextField_Ssex=new JTextField(SSEX);
+            JTextField jTextField_Ssex = new JTextField(SSEX);
             jTextField_Ssex.setBounds(80, 150, 150, 30);
             change_Person.add(jTextField_Ssex);
-            JLabel jLabel_change_age=new JLabel("年龄：");
+            JLabel jLabel_change_age = new JLabel("年龄：");
             jLabel_change_age.setBounds(30, 200, 100, 30);
             change_Person.add(jLabel_change_age);
-            JTextField jTextField_Sage=new JTextField(SAGE);
+            JTextField jTextField_Sage = new JTextField(SAGE);
             jTextField_Sage.setBounds(80, 200, 150, 30);
             change_Person.add(jTextField_Sage);
-            JButton button=new JButton("确定修改");
+            JButton button = new JButton("确定修改");
             button.setBounds(105, 250, 90, 30);
             button.addActionListener(e1 -> {
-
+                ConnectDB connectDB = new ConnectDB();
+                System.out.println(jTextField_Sage.getText());
+                if (jTextField_Sage.getText().length()!=0 && jTextField_Sname.getText().length()!=0 && jTextField_Ssex.getText().length()!=0) {
+                    connectDB.DoSql("update student set SNAME='" + jTextField_Sname.getText() + "',SAGE='" + jTextField_Sage.getText() +
+                            "',SSEX='" + jTextField_Ssex.getText() + "' where SNO=" + SNO);
+                    connectDB.DoSql("select * from student where SNO=" + SNO);
+                    try {
+                        connectDB.resultset.next();
+                        if (!Objects.equals(connectDB.resultset.getString("SNAME"), jTextField_Sname.getText()) ||
+                                !Objects.equals(connectDB.resultset.getString("SAGE"), jTextField_Sage.getText()) ||
+                                !Objects.equals(connectDB.resultset.getString("SSEX"), jTextField_Ssex.getText()))
+                            JOptionPane.showMessageDialog(null, "修改失败！", "错误", JOptionPane.ERROR_MESSAGE);
+                        else {
+                            JOptionPane.showMessageDialog(null, "修改成功！");
+                            SNAME=jTextField_Sname.getText();
+                            SAGE=jTextField_Sage.getText();
+                            SSEX=jTextField_Ssex.getText();
+                            jLabel_LoginUserName.setText("当前登录用户：" + SNAME);
+                        }
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                } else
+                    JOptionPane.showMessageDialog(null, "不能修改为空！", "错误", JOptionPane.ERROR_MESSAGE);
             });
             change_Person.add(button);
             change_Person.setVisible(true);
