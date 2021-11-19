@@ -113,9 +113,18 @@ class AdminWindow extends JFrame {
 
 class StudentWindow extends JFrame {
     private String SNO;
+    private String SNAME;
+    private String SSEX;
+    private String SAGE;
 
     StudentWindow(String SNO) throws SQLException {
         this.SNO = SNO;
+        ConnectDB connectDB=new ConnectDB();
+        connectDB.DoSql("select * from student where SNO="+SNO);
+        connectDB.resultset.next();
+        SNAME=connectDB.resultset.getString("SNAME");
+        SSEX=connectDB.resultset.getString("SSEX");
+        SAGE=connectDB.resultset.getString("SAGE");
         init();
         setBounds(50, 20, 900, 600);
         setTitle("学生界面");
@@ -128,10 +137,7 @@ class StudentWindow extends JFrame {
         JLabel label1 = new JLabel("<html><body><br/><br/>欢迎使用学生课程系统！</body></html>", JLabel.CENTER);
         label1.setFont(new Font("华文新魏", 1, 25));
         add(label1, BorderLayout.NORTH);
-        ConnectDB connectDB_1=new ConnectDB();
-        connectDB_1.DoSql("select * from student where SNO="+SNO);
-        connectDB_1.resultset.next();
-        JLabel label2=new JLabel("当前登录用户："+connectDB_1.resultset.getString("SNAME"));
+        JLabel label2=new JLabel("当前登录用户："+SNAME);
         label2.setFont(new Font("仿宋", 0, 15));
         add(label2,BorderLayout.SOUTH);
         JMenuBar menuBar = new JMenuBar();
@@ -195,10 +201,8 @@ class StudentWindow extends JFrame {
                         try {
                             connectDB.resultset.next();
                             if (!Objects.equals(connectDB.resultset.getString("PWD"), password.getText())) {
-                                JFrame errordialog = new JFrame();
                                 JOptionPane.showMessageDialog(null, "修改失败！","错误",JOptionPane.ERROR_MESSAGE);
                             } else {
-                                JFrame errordialog = new JFrame();
                                 JOptionPane.showMessageDialog(null, "修改成功！");
                             }
                         } catch (SQLException ex) {
@@ -206,8 +210,7 @@ class StudentWindow extends JFrame {
                         }
                     }
                     else {
-                        JFrame errordialog = new JFrame();
-                        JOptionPane.showMessageDialog(errordialog, "密码不能为空！","错误",JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "密码不能为空！","错误",JOptionPane.ERROR_MESSAGE);
                     }
                 }
                 else {
@@ -219,7 +222,36 @@ class StudentWindow extends JFrame {
         });
         jMenuItem_Person_changeperson.addActionListener(e -> {
             JFrame change_Person =new JFrame("修改个人信息");
+            change_Person.setBounds(500, 200, 310, 360);
+            change_Person.setResizable(false);
+            change_Person.setLayout(null);
+            JLabel change_Person_sno=new JLabel("学号：    "+SNO);
+            change_Person_sno.setBounds(30, 50, 100, 30);
+            change_Person.add(change_Person_sno);
+            JLabel jLabel_change_name=new JLabel("姓名：");
+            jLabel_change_name.setBounds(30, 100, 100, 30);
+            change_Person.add(jLabel_change_name);
+            JTextField jTextField_Sname=new JTextField(SNAME);
+            jTextField_Sname.setBounds(80, 100, 150, 30);
+            change_Person.add(jTextField_Sname);
+            JLabel jLabel_change_sex=new JLabel("性别：");
+            jLabel_change_sex.setBounds(30, 150, 100, 30);
+            change_Person.add(jLabel_change_sex);
+            JTextField jTextField_Ssex=new JTextField(SSEX);
+            jTextField_Ssex.setBounds(80, 150, 150, 30);
+            change_Person.add(jTextField_Ssex);
+            JLabel jLabel_change_age=new JLabel("年龄：");
+            jLabel_change_age.setBounds(30, 200, 100, 30);
+            change_Person.add(jLabel_change_age);
+            JTextField jTextField_Sage=new JTextField(SAGE);
+            jTextField_Sage.setBounds(80, 200, 150, 30);
+            change_Person.add(jTextField_Sage);
+            JButton button=new JButton("确定修改");
+            button.setBounds(105, 250, 90, 30);
+            button.addActionListener(e1 -> {
 
+            });
+            change_Person.add(button);
             change_Person.setVisible(true);
         });
     }
