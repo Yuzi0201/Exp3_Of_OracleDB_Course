@@ -48,18 +48,15 @@ class LoginWindow extends JFrame {
                     setVisible(false);
                     AdminWindow adminwindow = new AdminWindow();
                 } else {
-                    JFrame errordialog = new JFrame();
-                    JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！", "错误", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "错误的用户名或密码！", "错误", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 String sql = "select * from student where SNO=" + number.getText() + " and PWD=" + password.getText();
                 ConnectDB connectDB = new ConnectDB();
                 connectDB.DoSql(sql);
-                System.out.println(sql);
                 try {
                     if (!connectDB.resultset.next()) {
-                        JFrame errordialog = new JFrame();
-                        JOptionPane.showMessageDialog(errordialog, "错误的用户名或密码！", "错误", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "错误的用户名或密码！", "错误", JOptionPane.ERROR_MESSAGE);
                     } else {
                         setVisible(false);
                         StudentWindow studentWindow = new StudentWindow(number.getText());

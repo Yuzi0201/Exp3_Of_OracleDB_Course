@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.Objects;
+import javax.swing.table.*;
 
 class StudentWindow extends JFrame {
     private String SNO;
@@ -11,6 +12,10 @@ class StudentWindow extends JFrame {
     private String SSEX;
     private String SAGE;
     private JLabel jLabel_LoginUserName;
+    private JTable jTable_init;
+    private JTable jTable_grade;
+    private JTable jTable_credit;
+    private JScrollPane jScrollPane;
 
     StudentWindow(String SNO) throws SQLException {
         this.SNO = SNO;
@@ -29,7 +34,7 @@ class StudentWindow extends JFrame {
 
     void init() throws SQLException {
         setLayout(new BorderLayout());
-        JLabel label1 = new JLabel("<html><body><br/><br/>欢迎使用学生课程系统！</body></html>", JLabel.CENTER);
+        JLabel label1 = new JLabel("<html><body><br/><br/>欢迎使用学生课程系统！<br/><br/></body></html>", JLabel.CENTER);
         label1.setFont(new Font("华文新魏", 1, 25));
         add(label1, BorderLayout.NORTH);
         jLabel_LoginUserName = new JLabel("当前登录用户：" + SNAME);
@@ -111,7 +116,7 @@ class StudentWindow extends JFrame {
                 }
             });
             changePwd.setVisible(true);
-        });
+        });//修改密码代码实现
         jMenuItem_Person_changeperson.addActionListener(e -> {
             JFrame change_Person = new JFrame("修改个人信息");
             change_Person.setBounds(500, 200, 310, 360);
@@ -143,7 +148,7 @@ class StudentWindow extends JFrame {
             button.addActionListener(e1 -> {
                 ConnectDB connectDB = new ConnectDB();
                 System.out.println(jTextField_Sage.getText());
-                if (jTextField_Sage.getText().length()!=0 && jTextField_Sname.getText().length()!=0 && jTextField_Ssex.getText().length()!=0) {
+                if (jTextField_Sage.getText().length() != 0 && jTextField_Sname.getText().length() != 0 && jTextField_Ssex.getText().length() != 0) {
                     connectDB.DoSql("update student set SNAME='" + jTextField_Sname.getText() + "',SAGE='" + jTextField_Sage.getText() +
                             "',SSEX='" + jTextField_Ssex.getText() + "' where SNO=" + SNO);
                     connectDB.DoSql("select * from student where SNO=" + SNO);
@@ -155,9 +160,9 @@ class StudentWindow extends JFrame {
                             JOptionPane.showMessageDialog(null, "修改失败！", "错误", JOptionPane.ERROR_MESSAGE);
                         else {
                             JOptionPane.showMessageDialog(null, "修改成功！");
-                            SNAME=jTextField_Sname.getText();
-                            SAGE=jTextField_Sage.getText();
-                            SSEX=jTextField_Ssex.getText();
+                            SNAME = jTextField_Sname.getText();
+                            SAGE = jTextField_Sage.getText();
+                            SSEX = jTextField_Ssex.getText();
                             jLabel_LoginUserName.setText("当前登录用户：" + SNAME);
                         }
                     } catch (SQLException ex) {
@@ -168,7 +173,141 @@ class StudentWindow extends JFrame {
             });
             change_Person.add(button);
             change_Person.setVisible(true);
-        });
+        });//修改个人信息代码实现
+        init_jtable();
+        jMenuItem_Courses_add.addActionListener(e -> {
+            ConnectDB connectDB = new ConnectDB();
+            connectDB.DoSql("SELECT course.cno,course.cname,tname,tname,ccredit from course,teacherteaching WHERE course.cno=teacherteaching.cno AND course.cno NOT IN(SELECT cno FROM sc WHERE sno=" + SNO + ")");
+            int number_Of_columns = 0;
+            try {
+                while (connectDB.resultset.next())//获取未选课数
+                    number_Of_columns++;
+                JFrame jFrame = new JFrame("添加课程");
+                jFrame.setLayout(new BorderLayout());
+                jFrame.setBounds(500, 200, 500, 300);
+                JLabel jLabel1 = new JLabel("<html><body><br/><br/>请勾选要选择的课程</body></html>", JLabel.CENTER);
+                jLabel1.setFont(new Font("华文新魏", 1, 15));
+                jFrame.add(jLabel1, BorderLayout.NORTH);
+                String[] jTable_name = {"课程号", "课程名", "授课教师", "学分", "是否勾选"};
+                String[] jTable_DBname = {"CNO", "CNAME", "TNAME", "CCREDIT", "check"};
+                Object[][] tableData = new Object[number_Of_columns][5];
+                connectDB.DoSql("SELECT course.cno,course.cname,tname,ccredit from course,teacherteaching WHERE course.cno=teacherteaching.cno AND course.cno NOT IN(SELECT cno FROM sc WHERE sno=" + SNO + ")");
+                connectDB.resultset.next();
+                for (int i = 0; i < number_Of_columns; i++) {
+                    for (int j = 0; j < 4; j++) {
+                        tableData[i][j] = connectDB.resultset.getString(jTable_DBname[j]);
+                    }
+                    tableData[i][4] = false;
+                    connectDB.resultset.next();
+                }
+                JTable jTable = new JTable(tableData, jTable_name);
+                jTable.setRowHeight(30);
+                jTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(new JCheckBox()));
+                jFrame.add(new JScrollPane(jTable), BorderLayout.CENTER);
+                JButton jButton = new JButton("确定");
+                int finalNumber_Of_columns = number_Of_columns;
+                jButton.addActionListener(e1 -> {
+                    Object obj = true;
+                    for (int i = 0; i < finalNumber_Of_columns; i++) {
+                        if (tableData[i][4] == obj) {
+                            connectDB.DoSql("INSERT INTO sc VALUES(" + SNO + "," + tableData[i][0] + ",null)");
+                        }
+
+                    }
+                    jFrame.setVisible(false);
+                    try {
+                        flash_table();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                });
+                jFrame.add(jButton, BorderLayout.SOUTH);
+                jFrame.setVisible(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });//添加课程代码实现
+        jMenuItem_Courses_delete.addActionListener(e -> {
+            ConnectDB connectDB = new ConnectDB();
+            connectDB.DoSql("SELECT course.cno,course.cname,tname,tname,ccredit from course,teacherteaching WHERE course.cno=teacherteaching.cno AND course.cno IN(SELECT cno FROM sc WHERE sno=" + SNO + ")");
+            int number_Of_columns = 0;
+            try {
+                while (connectDB.resultset.next())//获取未选课数
+                    number_Of_columns++;
+                JFrame jFrame = new JFrame("添加课程");
+                jFrame.setLayout(new BorderLayout());
+                jFrame.setBounds(500, 200, 500, 300);
+                JLabel jLabel1 = new JLabel("<html><body><br/><br/>请勾选要选择的课程</body></html>", JLabel.CENTER);
+                jLabel1.setFont(new Font("华文新魏", 1, 15));
+                jFrame.add(jLabel1, BorderLayout.NORTH);
+                String[] jTable_name = {"课程号", "课程名", "授课教师", "学分", "是否勾选"};
+                String[] jTable_DBname = {"CNO", "CNAME", "TNAME", "CCREDIT", "check"};
+                Object[][] tableData = new Object[number_Of_columns][5];
+                connectDB.DoSql("SELECT course.cno,course.cname,tname,ccredit from course,teacherteaching WHERE course.cno=teacherteaching.cno AND course.cno IN(SELECT cno FROM sc WHERE sno=" + SNO + ")");
+                connectDB.resultset.next();
+                for (int i = 0; i < number_Of_columns; i++) {
+                    for (int j = 0; j < 4; j++) {
+                        tableData[i][j] = connectDB.resultset.getString(jTable_DBname[j]);
+                    }
+                    tableData[i][4] = true;
+                    connectDB.resultset.next();
+                }
+                JTable jTable = new JTable(tableData, jTable_name);
+                jTable.setRowHeight(30);
+                jTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(new JCheckBox()));
+                jFrame.add(new JScrollPane(jTable), BorderLayout.CENTER);
+                JButton jButton = new JButton("确定");
+                int finalNumber_Of_columns = number_Of_columns;
+                jButton.addActionListener(e1 -> {
+                    Object obj = false;
+                    for (int i = 0; i < finalNumber_Of_columns; i++) {
+                        if (tableData[i][4] == obj) {
+                            connectDB.DoSql("delete from sc where CNO=" + tableData[i][0]+" and sno="+SNO);
+                        }
+                    }
+                    jFrame.setVisible(false);
+                    try {
+                        flash_table();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                });
+                jFrame.add(jButton, BorderLayout.SOUTH);
+                jFrame.setVisible(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });//删除课程代码实现
+
+    }
+
+    void init_jtable() throws SQLException {
+        ConnectDB connectDB = new ConnectDB();
+        connectDB.DoSql("SELECT * FROM studentselsction WHERE sno=" + SNO);
+        int number_Of_columns = 0;
+        while (connectDB.resultset.next())//获取已选课数
+            number_Of_columns++;
+        String[] jTable_init_name = {"学号", "姓名", "课程"};
+        String[] jTable_init_DBname = {"SNO", "SNAME", "CNAME"};
+        Object[][] tableData = new Object[number_Of_columns][3];
+        connectDB.DoSql("SELECT * FROM studentselsction WHERE sno=" + SNO);
+        connectDB.resultset.next();
+        for (int i = 0; i < number_Of_columns; i++) {
+            for (int j = 0; j < 3; j++) {
+                tableData[i][j] = connectDB.resultset.getString(jTable_init_DBname[j]);
+            }
+            connectDB.resultset.next();
+        }
+        jTable_init = new JTable(tableData, jTable_init_name);
+        jTable_init.setRowHeight(35);
+        jTable_init.setEnabled(false);
+        add(jScrollPane= new JScrollPane(jTable_init), BorderLayout.CENTER);
+    }
+    void flash_table() throws SQLException {
+        remove(jTable_init);
+        remove(jScrollPane);
+        init_jtable();
+        revalidate();
     }
 }
 
