@@ -66,7 +66,7 @@ class StudentWindow extends JFrame {
         JMenuItem jMenuItem_Statistics_grade = new JMenuItem("查询成绩");
         jMenuItem_Statistics_grade.setPreferredSize(new Dimension(120, 30));
         jMenu_Statistics.add(jMenuItem_Statistics_grade);
-        JMenuItem jMenuItem_Statistics_credit = new JMenuItem("查询已获得学分");
+        JMenuItem jMenuItem_Statistics_credit = new JMenuItem("查询学分");
         jMenuItem_Statistics_credit.setPreferredSize(new Dimension(120, 30));
         jMenu_Statistics.add(jMenuItem_Statistics_credit);
         jMenuItem_Person_changepwd.addActionListener(e -> {
@@ -262,7 +262,7 @@ class StudentWindow extends JFrame {
                     Object obj = false;
                     for (int i = 0; i < finalNumber_Of_columns; i++) {
                         if (tableData[i][4] == obj) {
-                            connectDB.DoSql("delete from sc where CNO=" + tableData[i][0]+" and sno="+SNO);
+                            connectDB.DoSql("delete from sc where CNO=" + tableData[i][0] + " and sno=" + SNO);
                         }
                     }
                     jFrame.setVisible(false);
@@ -278,7 +278,32 @@ class StudentWindow extends JFrame {
                 ex.printStackTrace();
             }
         });//删除课程代码实现
-
+        jMenuItem_Statistics_grade.addActionListener(e -> {
+            jTable_init = null;
+            jTable_credit = null;
+            jTable_grade = null;
+            remove(jScrollPane);
+            try {
+                setjTable_grade();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            revalidate();
+        });
+        jMenuItem_Statistics_credit.addActionListener(e -> {
+            ConnectDB connectDB=new ConnectDB();
+            connectDB.DoSql("Select * from studentinfo where sno="+SNO);
+            String credit = null;
+            String valid_credit = null;
+            try {
+                connectDB.resultset.next();
+                credit=connectDB.resultset.getString("总学分");
+                valid_credit=connectDB.resultset.getString("已获得学分");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            JOptionPane.showMessageDialog(null, "当前已选课程总学分："+credit+ "\n当前已获得学分："+valid_credit);
+        });
     }
 
     void init_jtable() throws SQLException {
@@ -301,10 +326,35 @@ class StudentWindow extends JFrame {
         jTable_init = new JTable(tableData, jTable_init_name);
         jTable_init.setRowHeight(35);
         jTable_init.setEnabled(false);
-        add(jScrollPane= new JScrollPane(jTable_init), BorderLayout.CENTER);
+        add(jScrollPane = new JScrollPane(jTable_init), BorderLayout.CENTER);
+    }
+
+    void setjTable_grade() throws SQLException {
+        ConnectDB connectDB = new ConnectDB();
+        connectDB.DoSql("SELECT * FROM studentselsction WHERE sno=" + SNO);
+        int number_Of_columns = 0;
+        while (connectDB.resultset.next())//获取已选课数
+            number_Of_columns++;
+        String[] jTable_init_name = {"学号", "姓名", "课程","成绩"};
+        String[] jTable_init_DBname = {"SNO", "SNAME", "CNAME","GRADE"};
+        Object[][] tableData = new Object[number_Of_columns][4];
+        connectDB.DoSql("SELECT * FROM studentselsction WHERE sno=" + SNO);
+        connectDB.resultset.next();
+        for (int i = 0; i < number_Of_columns; i++) {
+            for (int j = 0; j < 4; j++) {
+                tableData[i][j] = connectDB.resultset.getString(jTable_init_DBname[j]);
+            }
+            connectDB.resultset.next();
+        }
+        jTable_init = new JTable(tableData, jTable_init_name);
+        jTable_init.setRowHeight(35);
+        jTable_init.setEnabled(false);
+        add(jScrollPane = new JScrollPane(jTable_init), BorderLayout.CENTER);
     }
     void flash_table() throws SQLException {
-        remove(jTable_init);
+        jTable_init = null;
+        jTable_credit = null;
+        jTable_grade = null;
         remove(jScrollPane);
         init_jtable();
         revalidate();
