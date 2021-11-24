@@ -43,8 +43,17 @@ class LoginWindow extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            ConnectDB connectDB = new ConnectDB();
             if (Objects.equals(number.getText(), "admin")) {
-                if (Objects.equals(password.getText(), "1919810")) {
+                connectDB.DoSql("select * from student where SNO=25565");
+                String pwd = null;
+                try {
+                    connectDB.resultset.next();
+                    pwd=connectDB.resultset.getString("PWD");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+                if (Objects.equals(password.getText(), pwd)) {
                     setVisible(false);
                     AdminWindow adminwindow = new AdminWindow();
                 } else {
@@ -52,7 +61,6 @@ class LoginWindow extends JFrame {
                 }
             } else {
                 String sql = "select * from student where SNO=" + number.getText() + " and PWD=" + password.getText();
-                ConnectDB connectDB = new ConnectDB();
                 connectDB.DoSql(sql);
                 try {
                     if (!connectDB.resultset.next()) {

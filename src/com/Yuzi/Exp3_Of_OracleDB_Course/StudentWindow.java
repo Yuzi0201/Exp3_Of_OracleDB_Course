@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.Objects;
-import javax.swing.table.*;
 
 class StudentWindow extends JFrame {
     private String SNO;
@@ -14,7 +13,6 @@ class StudentWindow extends JFrame {
     private JLabel jLabel_LoginUserName;
     private JTable jTable_init;
     private JTable jTable_grade;
-    private JTable jTable_credit;
     private JScrollPane jScrollPane;
 
     StudentWindow(String SNO) throws SQLException {
@@ -147,7 +145,6 @@ class StudentWindow extends JFrame {
             button.setBounds(105, 250, 90, 30);
             button.addActionListener(e1 -> {
                 ConnectDB connectDB = new ConnectDB();
-                System.out.println(jTextField_Sage.getText());
                 if (jTextField_Sage.getText().length() != 0 && jTextField_Sname.getText().length() != 0 && jTextField_Ssex.getText().length() != 0) {
                     connectDB.DoSql("update student set SNAME='" + jTextField_Sname.getText() + "',SAGE='" + jTextField_Sage.getText() +
                             "',SSEX='" + jTextField_Ssex.getText() + "' where SNO=" + SNO);
@@ -280,7 +277,6 @@ class StudentWindow extends JFrame {
         });//删除课程代码实现
         jMenuItem_Statistics_grade.addActionListener(e -> {
             jTable_init = null;
-            jTable_credit = null;
             jTable_grade = null;
             remove(jScrollPane);
             try {
@@ -346,14 +342,13 @@ class StudentWindow extends JFrame {
             }
             connectDB.resultset.next();
         }
-        jTable_init = new JTable(tableData, jTable_init_name);
-        jTable_init.setRowHeight(35);
-        jTable_init.setEnabled(false);
-        add(jScrollPane = new JScrollPane(jTable_init), BorderLayout.CENTER);
+        jTable_grade = new JTable(tableData, jTable_init_name);
+        jTable_grade.setRowHeight(35);
+        jTable_grade.setEnabled(false);
+        add(jScrollPane = new JScrollPane(jTable_grade), BorderLayout.CENTER);
     }
     void flash_table() throws SQLException {
         jTable_init = null;
-        jTable_credit = null;
         jTable_grade = null;
         remove(jScrollPane);
         init_jtable();
