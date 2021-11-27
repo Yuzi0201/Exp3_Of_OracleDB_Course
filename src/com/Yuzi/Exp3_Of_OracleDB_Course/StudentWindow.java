@@ -231,10 +231,10 @@ class StudentWindow extends JFrame {
             try {
                 while (connectDB.resultset.next())//获取未选课数
                     number_Of_columns++;
-                JFrame jFrame = new JFrame("添加课程");
+                JFrame jFrame = new JFrame("退选课程");
                 jFrame.setLayout(new BorderLayout());
                 jFrame.setBounds(500, 200, 500, 300);
-                JLabel jLabel1 = new JLabel("<html><body><br/><br/>请勾选要选择的课程</body></html>", JLabel.CENTER);
+                JLabel jLabel1 = new JLabel("<html><body><br/><br/>请叉选要退掉的课程</body></html>", JLabel.CENTER);
                 jLabel1.setFont(new Font("华文新魏", 1, 15));
                 jFrame.add(jLabel1, BorderLayout.NORTH);
                 String[] jTable_name = {"课程号", "课程名", "授课教师", "学分", "是否勾选"};
