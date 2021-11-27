@@ -35,21 +35,14 @@ class LoginWindow extends JFrame {
         button = new JButton("确定");
         button.setBounds(115, 150, 70, 30);
         add(button);
-        ButtonAction button_action = new ButtonAction();
-        button.addActionListener(button_action);
-    }
-
-    private class ButtonAction implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
+        button.addActionListener(e -> {
             ConnectDB connectDB = new ConnectDB();
             if (Objects.equals(number.getText(), "admin")) {
                 connectDB.DoSql("select * from student where SNO=25565");
                 String pwd = null;
                 try {
                     connectDB.resultset.next();
-                    pwd=connectDB.resultset.getString("PWD");
+                    pwd = connectDB.resultset.getString("PWD");
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -73,6 +66,6 @@ class LoginWindow extends JFrame {
                     ex.printStackTrace();
                 }
             }
-        }
+        });
     }
 }

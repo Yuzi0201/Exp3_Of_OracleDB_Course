@@ -287,31 +287,31 @@ class StudentWindow extends JFrame {
             revalidate();
         });
         jMenuItem_Statistics_credit.addActionListener(e -> {
-            ConnectDB connectDB=new ConnectDB();
-            connectDB.DoSql("Select * from studentinfo where sno="+SNO);
+            ConnectDB connectDB = new ConnectDB();
+            connectDB.DoSql("Select * from studentinfo where sno=" + SNO);
             String credit = null;
             String valid_credit = null;
             try {
                 connectDB.resultset.next();
-                credit=connectDB.resultset.getString("总学分");
-                valid_credit=connectDB.resultset.getString("已获得学分");
+                credit = connectDB.resultset.getString("总学分");
+                valid_credit = connectDB.resultset.getString("已获得学分");
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
-            JOptionPane.showMessageDialog(null, "当前已选课程总学分："+credit+ "\n当前已获得学分："+valid_credit);
+            JOptionPane.showMessageDialog(null, "当前已选课程总学分：" + credit + "\n当前已获得学分：" + valid_credit);
         });
     }
 
     void init_jtable() throws SQLException {
         ConnectDB connectDB = new ConnectDB();
-        connectDB.DoSql("SELECT * FROM studentselsction WHERE sno=" + SNO);
+        connectDB.DoSql("SELECT * FROM studentselection WHERE sno=" + SNO);
         int number_Of_columns = 0;
         while (connectDB.resultset.next())//获取已选课数
             number_Of_columns++;
         String[] jTable_init_name = {"学号", "姓名", "课程"};
         String[] jTable_init_DBname = {"SNO", "SNAME", "CNAME"};
         Object[][] tableData = new Object[number_Of_columns][3];
-        connectDB.DoSql("SELECT * FROM studentselsction WHERE sno=" + SNO);
+        connectDB.DoSql("SELECT * FROM studentselection WHERE sno=" + SNO);
         connectDB.resultset.next();
         for (int i = 0; i < number_Of_columns; i++) {
             for (int j = 0; j < 3; j++) {
@@ -320,6 +320,7 @@ class StudentWindow extends JFrame {
             connectDB.resultset.next();
         }
         jTable_init = new JTable(tableData, jTable_init_name);
+        jTable_init.getTableHeader().setReorderingAllowed(false);
         jTable_init.setRowHeight(35);
         jTable_init.setEnabled(false);
         add(jScrollPane = new JScrollPane(jTable_init), BorderLayout.CENTER);
@@ -327,14 +328,14 @@ class StudentWindow extends JFrame {
 
     void setjTable_grade() throws SQLException {
         ConnectDB connectDB = new ConnectDB();
-        connectDB.DoSql("SELECT * FROM studentselsction WHERE sno=" + SNO);
+        connectDB.DoSql("SELECT * FROM studentselection WHERE sno=" + SNO);
         int number_Of_columns = 0;
         while (connectDB.resultset.next())//获取已选课数
             number_Of_columns++;
-        String[] jTable_init_name = {"学号", "姓名", "课程","成绩"};
-        String[] jTable_init_DBname = {"SNO", "SNAME", "CNAME","GRADE"};
+        String[] jTable_init_name = {"学号", "姓名", "课程", "成绩"};
+        String[] jTable_init_DBname = {"SNO", "SNAME", "CNAME", "GRADE"};
         Object[][] tableData = new Object[number_Of_columns][4];
-        connectDB.DoSql("SELECT * FROM studentselsction WHERE sno=" + SNO);
+        connectDB.DoSql("SELECT * FROM studentselection WHERE sno=" + SNO);
         connectDB.resultset.next();
         for (int i = 0; i < number_Of_columns; i++) {
             for (int j = 0; j < 4; j++) {
@@ -343,10 +344,12 @@ class StudentWindow extends JFrame {
             connectDB.resultset.next();
         }
         jTable_grade = new JTable(tableData, jTable_init_name);
+        jTable_grade.getTableHeader().setReorderingAllowed(false);
         jTable_grade.setRowHeight(35);
         jTable_grade.setEnabled(false);
         add(jScrollPane = new JScrollPane(jTable_grade), BorderLayout.CENTER);
     }
+
     void flash_table() throws SQLException {
         jTable_init = null;
         jTable_grade = null;
